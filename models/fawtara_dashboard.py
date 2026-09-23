@@ -68,8 +68,7 @@ class FawtaraDashboard(models.Model):
 
             rec.failed_this_month = inv.search_count([
                 ('created_at', '>=', month_start_dt),
-                ('status', 'in', ['FAILED', 'REJECTED',
-                                   'VALIDATION_FAILED'])])
+                ('status_group', '=', 'failed')])
 
             total = rec.invoices_this_month
             rec.clearance_rate = (

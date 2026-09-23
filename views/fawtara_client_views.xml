@@ -71,6 +71,9 @@
                             <field name="name_ar"/>
                             <field name="cr_number"/>
                             <field name="vatin"/>
+                            <field name="company_id"
+                                   options="{'no_create': True}"
+                                   required="status == 'ACTIVE'"/>
                         </group>
                         <group string="Contact">
                             <field name="contact_name"/>
@@ -153,6 +156,9 @@
                             <field name="company_name_ar"/>
                             <field name="cr_number"/>
                             <field name="vatin" placeholder="OM1112345678"/>
+                            <field name="company_id"
+                                   placeholder="Leave empty to create a new company"
+                                   options="{'no_create': True}"/>
                         </group>
                         <group string="Primary Contact">
                             <field name="contact_name"/>

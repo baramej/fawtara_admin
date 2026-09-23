@@ -5,6 +5,9 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# Spring Boot seeds this client for the Baramej admin API key (V7 migration)
+ADMIN_CLIENT_ID = 'baramej-admin-000'
+
 
 class FawtaraClient(models.Model):
     _name = 'fawtara.client'
@@ -28,6 +31,25 @@ class FawtaraClient(models.Model):
         help='OM + 10 digits e.g. OM1112345678')
     participant_id = fields.Char(
         string='Peppol Participant ID', readonly=True)
+
+    # ── Odoo company this client logs into ────────────────────────
+    # Each Fawtara client is one res.company in this Odoo database.
+    # Record rules scope every client-facing model by this company.
+    company_id = fields.Many2one(
+        'res.company', string='Odoo Company', index=True, copy=False,
+        tracking=True, ondelete='restrict',
+        help='The Odoo company the client\'s users work in. Their portal '
+             'shows only invoices of the Fawtara client linked here.')
+    user_ids = fields.Many2many(
+        'res.users', string='Client Users',
+        compute='_compute_user_ids')
+
+    _company_uniq = models.Constraint(
+        'UNIQUE(company_id)',
+        'An Odoo company can be linked to only one Fawtara client.')
+    _client_id_uniq = models.Constraint(
+        'UNIQUE(client_id)',
+        'Fawtara Client ID must be unique.')
 
     # ── Contact ───────────────────────────────────────────────────
     contact_name = fields.Char(string='Contact Person')
@@ -72,16 +94,49 @@ class FawtaraClient(models.Model):
     failed_count = fields.Integer(
         string='Failed', compute='_compute_invoice_stats')
 
+    def _compute_user_ids(self):
+        Users = self.env['res.users'].sudo()
+        for rec in self:
+            rec.user_ids = Users.search(
+                [('company_ids', 'in', rec.company_id.ids)]
+            ) if rec.company_id else Users.browse()
+
+    @api.model
+    def _get_current_client(self):
+        """Fawtara client of the company the user is currently working in.
+
+        This replaces the old "first ACTIVE client" lookup, which let every
+        user see the first client's data regardless of their company.
+        """
+        return self.sudo().search(
+            [('company_id', '=', self.env.company.id)], limit=1)
+
+    @api.model
+    def _resolve_from_fawtara(self, client_id=None, vatin=None):
+        """Map a Spring Boot invoice to an Odoo client.
+
+        Invoices submitted with the Baramej admin key carry the admin
+        clientId, so fall back to the seller VATIN in that case.
+        """
+        Client = self.sudo()
+        if client_id and client_id != ADMIN_CLIENT_ID:
+            rec = Client.search([('client_id', '=', client_id)], limit=1)
+            if rec:
+                return rec
+        if vatin:
+            return Client.search([('vatin', '=', vatin)], limit=1)
+        return Client.browse()
+
     @api.depends('client_id')
     def _compute_invoice_stats(self):
         for rec in self:
-            invoices = self.env['fawtara.invoice'].sudo().search(
-                [('client_id', '=', rec.client_id)])
-            rec.invoice_count = len(invoices)
-            rec.cleared_count = len(
-                invoices.filtered(lambda i: i.status == 'CLEARED'))
-            rec.failed_count = len(
-                invoices.filtered(lambda i: i.status == 'FAILED'))
+            Inv = self.env['fawtara.invoice'].sudo()
+            dom = [('fawtara_client_id', '=', rec.id)]
+            rec.invoice_count = Inv.search_count(dom)
+            rec.cleared_count = Inv.search_count(
+                dom + [('status_group', '=', 'cleared')])
+            rec.failed_count = Inv.search_count(
+                dom + [('status_group', '=', 'failed')])
 
     # ── Billing ───────────────────────────────────────────────────
     subscription_ids = fields.One2many(
@@ -149,8 +204,8 @@ class FawtaraClient(models.Model):
             'name': f'Invoices — {self.name}',
             'res_model': 'fawtara.invoice',
             'view_mode': 'list,form',
-            'domain': [('client_id', '=', self.client_id)],
-            'context': {'default_client_id': self.client_id},
+            'domain': [('fawtara_client_id', '=', self.id)],
+            'context': {'default_fawtara_client_id': self.id},
         }
 
     def action_register_smp(self):

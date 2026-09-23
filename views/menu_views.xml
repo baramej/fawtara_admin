@@ -2,8 +2,11 @@
 <odoo>
 
     <!-- Top level -->
+    <!-- Baramej back office. Restricted to ASP admins: client companies
+         sharing this database must never see it. -->
     <menuitem id="menu_fawtara_root"
-              name="Fawtara"
+              name="Fawtara Admin"
+              groups="group_fawtara_admin"
               sequence="10"/>
 
     <!-- Dashboard — first item -->
@@ -42,6 +45,18 @@
               parent="menu_fawtara_invoices"
               action="action_fawtara_invoices"
               sequence="10"/>
+
+    <menuitem id="menu_fawtara_invoices_sync"
+              name="Sync from Fawtara"
+              parent="menu_fawtara_invoices"
+              action="action_server_fawtara_sync"
+              sequence="20"/>
+
+    <menuitem id="menu_fawtara_invoices_sync_full"
+              name="Full Re-sync"
+              parent="menu_fawtara_invoices"
+              action="action_server_fawtara_sync_full"
+              sequence="30"/>
 
     <!-- Billing -->
     <menuitem id="menu_fawtara_billing"

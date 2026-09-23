@@ -170,7 +170,7 @@ class FawtaraClientSubscription(models.Model):
 
             # Count cleared invoices for this client in period
             used = self.env['fawtara.invoice'].sudo().search_count([
-                ('client_id', '=', rec.client_id.client_id),
+                ('fawtara_client_id', '=', rec.client_id.id),
                 ('status', '=', 'CLEARED'),
                 ('created_at', '>=',
                  fields.Datetime.to_datetime(str(p_start))),

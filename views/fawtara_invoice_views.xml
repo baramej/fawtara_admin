@@ -1,29 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Invoice List View -->
+    <!-- Invoice List View (shared by admin and client portal) -->
     <record id="view_fawtara_invoice_list" model="ir.ui.view">
         <field name="name">fawtara.invoice.list</field>
         <field name="model">fawtara.invoice</field>
         <field name="arch" type="xml">
-            <list string="All Invoices"
-                  decoration-success="status == 'CLEARED'"
-                  decoration-danger="status == 'FAILED'"
-                  decoration-warning="status == 'PROCESSING'"
-                  decoration-muted="status == 'QUEUED'">
+            <list string="Invoices" create="0" delete="0"
+                  decoration-success="status_group == 'cleared'"
+                  decoration-danger="status_group == 'failed'"
+                  decoration-warning="status_group == 'processing'"
+                  decoration-muted="status_group == 'queued'">
                 <field name="name"/>
-                <field name="client_name"/>
+                <field name="client_name" groups="fawtara_admin.group_fawtara_admin"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <field name="source" widget="badge"/>
+                <field name="environment" optional="show"/>
                 <field name="invoice_type_code"/>
                 <field name="transaction_type"/>
-                <field name="seller_vatin"/>
+                <field name="seller_vatin" optional="hide"/>
                 <field name="buyer_name"/>
                 <field name="issue_date"/>
-                <field name="total_excl_tax"/>
-                <field name="total_tax"/>
-                <field name="total_incl_tax"/>
-                <field name="status"/>
+                <field name="total_excl_tax" sum="Total"/>
+                <field name="total_tax" sum="VAT"/>
+                <field name="total_incl_tax" sum="Total incl."/>
+                <field name="status" widget="badge"
+                       decoration-success="status_group == 'cleared'"
+                       decoration-danger="status_group == 'failed'"
+                       decoration-warning="status_group in ('queued', 'processing')"/>
+                <field name="status_group" column_invisible="1"/>
                 <field name="created_at"/>
             </list>
+        </field>
+    </record>
+
+    <!-- Invoice Search View -->
+    <record id="view_fawtara_invoice_search" model="ir.ui.view">
+        <field name="name">fawtara.invoice.search</field>
+        <field name="model">fawtara.invoice</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="invoice_number"/>
+                <field name="buyer_name"/>
+                <field name="buyer_vatin"/>
+                <field name="invoice_uuid"/>
+                <field name="fawtara_client_id" groups="fawtara_admin.group_fawtara_admin"/>
+                <filter name="cleared" string="Cleared" domain="[('status_group', '=', 'cleared')]"/>
+                <filter name="failed" string="Failed" domain="[('status_group', '=', 'failed')]"/>
+                <filter name="pending" string="In Progress" domain="[('status_group', 'in', ('queued', 'processing'))]"/>
+                <separator/>
+                <filter name="src_api" string="API" domain="[('source', '=', 'API')]"/>
+                <filter name="src_portal" string="Portal Form" domain="[('source', '=', 'PORTAL')]"/>
+                <filter name="src_excel" string="Excel Upload" domain="[('source', '=', 'EXCEL')]"/>
+                <separator/>
+                <filter name="production" string="Production" domain="[('environment', '=', 'PRODUCTION')]"/>
+                <filter name="sandbox" string="Sandbox" domain="[('environment', '=', 'SANDBOX')]"/>
+                <separator/>
+                <filter name="credit_notes" string="Credit Notes" domain="[('invoice_type_code', 'in', ('381', '261'))]"/>
+                <filter name="unmatched" string="Unmatched Client" domain="[('fawtara_client_id', '=', False)]"
+                        groups="fawtara_admin.group_fawtara_admin"/>
+                <group>
+                    <filter name="group_client" string="Client" context="{'group_by': 'fawtara_client_id'}"
+                            groups="fawtara_admin.group_fawtara_admin"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_source" string="Channel" context="{'group_by': 'source'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'invoice_type_code'}"/>
+                    <filter name="group_month" string="Issue Month" context="{'group_by': 'issue_date:month'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -32,61 +76,138 @@
         <field name="name">fawtara.invoice.form</field>
         <field name="model">fawtara.invoice</field>
         <field name="arch" type="xml">
-            <form string="Invoice Detail">
+            <form string="Invoice Detail" create="0" delete="0" edit="0">
                 <header>
                     <button name="action_refresh_status"
                             string="Refresh Status"
                             type="object"
-                            class="btn-primary"/>
+                            class="btn-primary"
+                            groups="fawtara_admin.group_fawtara_admin"/>
                     <field name="status" widget="statusbar"
                            statusbar_visible="QUEUED,PROCESSING,CLEARED"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                        <field name="source" widget="badge"/>
+                        <field name="environment" widget="badge" class="ms-2"/>
+                    </div>
                     <group>
                         <group string="Invoice Info">
-                            <field name="name"/>
                             <field name="invoice_uuid"/>
                             <field name="invoice_uuid_v5"/>
                             <field name="invoice_type_code"/>
                             <field name="transaction_type"/>
                             <field name="issue_date"/>
+                            <field name="issue_time"/>
+                            <field name="created_at"/>
                         </group>
-                        <group string="Client">
-                            <field name="client_name"/>
-                            <field name="client_id"/>
+                        <group string="Clearance">
+                            <field name="fawtara_client_id" groups="fawtara_admin.group_fawtara_admin"/>
+                            <field name="client_id" groups="fawtara_admin.group_fawtara_admin"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                             <field name="clearance_id"/>
+                            <field name="tdd_uuid"/>
+                            <field name="last_sync_at"/>
+                            <field name="status_group" invisible="1"/>
                         </group>
                     </group>
                     <group>
                         <group string="Seller">
                             <field name="seller_name"/>
                             <field name="seller_vatin"/>
+                            <field name="seller_address_line1"/>
+                            <field name="seller_city"/>
+                            <field name="seller_country_code"/>
                         </group>
                         <group string="Buyer">
                             <field name="buyer_name"/>
                             <field name="buyer_vatin"/>
+                            <field name="buyer_address_line1"/>
+                            <field name="buyer_city"/>
+                            <field name="buyer_country_code"/>
                         </group>
                     </group>
-                    <group string="Amounts">
+                    <group string="Credit Note Reference"
+                           invisible="not preceding_invoice_number">
+                        <field name="preceding_invoice_number"/>
+                        <field name="preceding_invoice_uuid"/>
+                        <field name="preceding_invoice_date"/>
+                        <field name="credit_note_reason"/>
+                    </group>
+                    <group string="Error Detail" invisible="not error_detail">
+                        <field name="error_detail" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Lines" name="lines">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="item_name"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_code"/>
+                                    <field name="unit_price"/>
+                                    <field name="vat_category_code"/>
+                                    <field name="vat_rate"/>
+                                    <field name="line_total" sum="Net"/>
+                                    <field name="vat_amount" sum="VAT"/>
+                                    <field name="service_type_code" optional="hide"/>
+                                    <field name="isic_code" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Other Info" name="other">
+                            <group>
+                                <field name="contract_reference"/>
+                                <field name="purchase_order_reference"/>
+                                <field name="invoice_note"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer">
                         <field name="currency_code"/>
                         <field name="total_excl_tax"/>
                         <field name="total_tax"/>
-                        <field name="total_incl_tax"/>
-                    </group>
-                    <group string="Error Detail" invisible="not error_detail">
-                        <field name="error_detail" nolabel="1"/>
+                        <field name="total_incl_tax" class="oe_subtotal_footer_separator"/>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
 
-
-    <!-- Invoice Action -->
+    <!-- Admin: all invoices of all clients -->
     <record id="action_fawtara_invoices" model="ir.actions.act_window">
         <field name="name">All Invoices</field>
         <field name="res_model">fawtara.invoice</field>
         <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_fawtara_invoice_search"/>
+    </record>
+
+    <!-- Admin: pull invoices from Spring Boot (recovers missed webhooks) -->
+    <record id="action_server_fawtara_sync" model="ir.actions.server">
+        <field name="name">Sync from Fawtara</field>
+        <field name="model_id" ref="model_fawtara_invoice"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('group_fawtara_admin'))]"/>
+        <field name="code">action = model.action_sync_from_fawtara()</field>
+    </record>
+
+    <record id="action_server_fawtara_sync_full" model="ir.actions.server">
+        <field name="name">Full Re-sync from Fawtara</field>
+        <field name="model_id" ref="model_fawtara_invoice"/>
+        <field name="state">code</field>
+        <field name="group_ids" eval="[(4, ref('group_fawtara_admin'))]"/>
+        <field name="code">action = model.action_sync_from_fawtara(full=True)</field>
+    </record>
+
+    <record id="cron_fawtara_sync" model="ir.cron">
+        <field name="name">Fawtara: incremental invoice sync</field>
+        <field name="model_id" ref="model_fawtara_invoice"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_sync_from_fawtara()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
     </record>
 
 </odoo>

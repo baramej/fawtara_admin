@@ -26,6 +26,10 @@ class OnboardClientWizard(models.TransientModel):
         string='Contact Email', required=True)
     contact_phone = fields.Char(string='Contact Phone')
     notes = fields.Text(string='Notes')
+    company_id = fields.Many2one(
+        'res.company', string='Odoo Company',
+        help='Company the client\'s users will log into. '
+             'Leave empty to create one from the details above.')
     register_smp = fields.Boolean(
         string='Register on Peppol SMP immediately',
         default=True)
@@ -97,8 +101,23 @@ class OnboardClientWizard(models.TransientModel):
         except requests.exceptions.RequestException as e:
             raise UserError(f"Cannot reach Fawtara API: {str(e)}")
 
+        # Odoo company the client's users work in (drives record rules)
+        omr = self.env.ref('base.OMR')
+        if not omr.active:
+            omr.sudo().active = True
+        company = self.company_id or self.env['res.company'].sudo().create({
+            'name': self.company_name,
+            'vat': self.vatin,
+            'company_registry': self.cr_number,
+            'email': self.contact_email,
+            'phone': self.contact_phone or False,
+            'country_id': self.env.ref('base.om').id,
+            'currency_id': omr.id,
+        })
+
         # Save in Odoo
         client_rec = self.env['fawtara.client'].create({
+            'company_id':         company.id,
             'name':               self.company_name,
             'name_ar':            self.company_name_ar,
             'cr_number':          self.cr_number,

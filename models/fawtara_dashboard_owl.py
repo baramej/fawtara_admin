@@ -107,8 +107,7 @@ class FawtaraDashboardOwl(models.Model):
             rec.cleared_this_month = len(cleared)
 
             rec.failed_this_month = inv.search_count(
-                base + [('status', 'in',
-                         ['FAILED', 'VALIDATION_FAILED', 'REJECTED'])])
+                base + [('status_group', '=', 'failed')])
 
             total = rec.invoices_this_month
             rec.clearance_rate = round(
@@ -169,7 +168,7 @@ class FawtaraDashboardOwl(models.Model):
             client_data = []
             for c in clients:
                 count = inv.search_count(
-                    domain + [('client_id', '=', c.client_id)])
+                    domain + [('fawtara_client_id', '=', c.id)])
                 if count:
                     client_data.append({
                         'name': c.name,
@@ -190,8 +189,7 @@ class FawtaraDashboardOwl(models.Model):
                 failed = inv.search_count([
                     ('created_at', '>=', start),
                     ('created_at', '<=', end),
-                    ('status', 'in',
-                     ['FAILED', 'VALIDATION_FAILED', 'REJECTED']),
+                    ('status_group', '=', 'failed'),
                 ])
                 trend.append({
                     'month': label,
@@ -217,17 +215,16 @@ class FawtaraDashboardOwl(models.Model):
             table = []
             for c in clients:
                 used = inv.search_count(
-                    domain + [('client_id', '=', c.client_id)])
+                    domain + [('fawtara_client_id', '=', c.id)])
                 cleared_count = inv.search_count(
                     domain + [
-                        ('client_id', '=', c.client_id),
+                        ('fawtara_client_id', '=', c.id),
                         ('status', '=', 'CLEARED'),
                     ])
                 failed_count = inv.search_count(
                     domain + [
-                        ('client_id', '=', c.client_id),
-                        ('status', 'in',
-                         ['FAILED', 'VALIDATION_FAILED', 'REJECTED']),
+                        ('fawtara_client_id', '=', c.id),
+                        ('status_group', '=', 'failed'),
                     ])
                 active_sub = sub.search([
                     ('client_id', '=', c.id),
@@ -256,17 +253,14 @@ class FawtaraDashboardOwl(models.Model):
 
             # ── Failed invoices ───────────────────────────────────
             failed_recs = inv.search(
-                [('status', 'in',
-                  ['FAILED', 'VALIDATION_FAILED', 'REJECTED'])],
+                [('status_group', '=', 'failed')],
                 order='created_at desc', limit=20)
             failed_list = []
             for f in failed_recs:
-                cl = client.search(
-                    [('client_id', '=', f.client_id)], limit=1)
                 failed_list.append({
                     'uuid':   f.invoice_uuid or '',
                     'number': f.invoice_number or '',
-                    'client': cl.name if cl else f.client_id or '',
+                    'client': f.client_name or f.client_id or '',
                     'type':   f.invoice_type_code or '',
                     'date':   str(f.issue_date or ''),
                     'status': f.status or '',
