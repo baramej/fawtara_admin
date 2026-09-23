@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Top level -->
+    <menuitem id="menu_fawtara_root"
+              name="Fawtara"
+              sequence="10"/>
+
+    <!-- Dashboard — first item -->
+    <menuitem id="menu_fawtara_dashboard"
+              name="Dashboard"
+              parent="menu_fawtara_root"
+              action="action_fawtara_dashboard_owl"
+              sequence="1"/>
+
+    <!-- Clients -->
+    <menuitem id="menu_fawtara_clients"
+              name="Clients"
+              parent="menu_fawtara_root"
+              sequence="10"/>
+
+    <menuitem id="menu_fawtara_clients_list"
+              name="All Clients"
+              parent="menu_fawtara_clients"
+              action="action_fawtara_clients"
+              sequence="10"/>
+
+    <menuitem id="menu_fawtara_onboard"
+              name="Onboard New Client"
+              parent="menu_fawtara_clients"
+              action="action_onboard_wizard"
+              sequence="20"/>
+
+    <!-- Invoices -->
+    <menuitem id="menu_fawtara_invoices"
+              name="Invoices"
+              parent="menu_fawtara_root"
+              sequence="20"/>
+
+    <menuitem id="menu_fawtara_invoices_all"
+              name="All Invoices"
+              parent="menu_fawtara_invoices"
+              action="action_fawtara_invoices"
+              sequence="10"/>
+
+    <!-- Billing -->
+    <menuitem id="menu_fawtara_billing"
+              name="Billing"
+              parent="menu_fawtara_root"
+              sequence="30"/>
+
+    <menuitem id="menu_fawtara_subscriptions"
+              name="Subscriptions"
+              parent="menu_fawtara_billing"
+              action="action_subscriptions"
+              sequence="10"/>
+
+    <menuitem id="menu_fawtara_billing_plans"
+              name="Billing Plans"
+              parent="menu_fawtara_billing"
+              action="action_billing_plans"
+              sequence="20"/>
+
+</odoo>

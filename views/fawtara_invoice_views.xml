@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Invoice List View -->
+    <record id="view_fawtara_invoice_list" model="ir.ui.view">
+        <field name="name">fawtara.invoice.list</field>
+        <field name="model">fawtara.invoice</field>
+        <field name="arch" type="xml">
+            <list string="All Invoices"
+                  decoration-success="status == 'CLEARED'"
+                  decoration-danger="status == 'FAILED'"
+                  decoration-warning="status == 'PROCESSING'"
+                  decoration-muted="status == 'QUEUED'">
+                <field name="name"/>
+                <field name="client_name"/>
+                <field name="invoice_type_code"/>
+                <field name="transaction_type"/>
+                <field name="seller_vatin"/>
+                <field name="buyer_name"/>
+                <field name="issue_date"/>
+                <field name="total_excl_tax"/>
+                <field name="total_tax"/>
+                <field name="total_incl_tax"/>
+                <field name="status"/>
+                <field name="created_at"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Invoice Form View -->
+    <record id="view_fawtara_invoice_form" model="ir.ui.view">
+        <field name="name">fawtara.invoice.form</field>
+        <field name="model">fawtara.invoice</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Detail">
+                <header>
+                    <button name="action_refresh_status"
+                            string="Refresh Status"
+                            type="object"
+                            class="btn-primary"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="QUEUED,PROCESSING,CLEARED"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Invoice Info">
+                            <field name="name"/>
+                            <field name="invoice_uuid"/>
+                            <field name="invoice_uuid_v5"/>
+                            <field name="invoice_type_code"/>
+                            <field name="transaction_type"/>
+                            <field name="issue_date"/>
+                        </group>
+                        <group string="Client">
+                            <field name="client_name"/>
+                            <field name="client_id"/>
+                            <field name="clearance_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Seller">
+                            <field name="seller_name"/>
+                            <field name="seller_vatin"/>
+                        </group>
+                        <group string="Buyer">
+                            <field name="buyer_name"/>
+                            <field name="buyer_vatin"/>
+                        </group>
+                    </group>
+                    <group string="Amounts">
+                        <field name="currency_code"/>
+                        <field name="total_excl_tax"/>
+                        <field name="total_tax"/>
+                        <field name="total_incl_tax"/>
+                    </group>
+                    <group string="Error Detail" invisible="not error_detail">
+                        <field name="error_detail" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- Invoice Action -->
+    <record id="action_fawtara_invoices" model="ir.actions.act_window">
+        <field name="name">All Invoices</field>
+        <field name="res_model">fawtara.invoice</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

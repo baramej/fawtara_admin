@@ -1,0 +1,14 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_fawtara_client_admin,fawtara.client admin,model_fawtara_client,base.group_system,1,1,1,1
+access_fawtara_client_user,fawtara.client user,model_fawtara_client,base.group_user,1,0,0,0
+access_fawtara_invoice_admin,fawtara.invoice admin,model_fawtara_invoice,base.group_system,1,1,1,1
+access_fawtara_invoice_user,fawtara.invoice user,model_fawtara_invoice,base.group_user,1,0,0,0
+access_fawtara_onboard_wizard,fawtara.onboard.wizard,model_fawtara_onboard_wizard,base.group_system,1,1,1,1
+access_billing_plan_admin,fawtara.billing.plan admin,model_fawtara_billing_plan,base.group_system,1,1,1,1
+access_billing_plan_user,fawtara.billing.plan user,model_fawtara_billing_plan,base.group_user,1,0,0,0
+access_subscription_admin,fawtara.client.subscription admin,model_fawtara_client_subscription,base.group_system,1,1,1,1
+access_subscription_user,fawtara.client.subscription user,model_fawtara_client_subscription,base.group_user,1,0,0,0
+access_dashboard_admin,fawtara.dashboard admin,model_fawtara_dashboard,base.group_system,1,1,1,1
+access_dashboard_user,fawtara.dashboard user,model_fawtara_dashboard,base.group_user,1,0,0,0
+access_dashboard_owl_admin,fawtara.dashboard.owl admin,model_fawtara_dashboard_owl,base.group_system,1,1,1,1
+access_dashboard_owl_user,fawtara.dashboard.owl user,model_fawtara_dashboard_owl,base.group_user,1,1,1,0

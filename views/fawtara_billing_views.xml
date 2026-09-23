@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- Billing Plan list -->
+  <record id="view_billing_plan_list" model="ir.ui.view">
+    <field name="name">fawtara.billing.plan.list</field>
+    <field name="model">fawtara.billing.plan</field>
+    <field name="arch" type="xml">
+      <list string="Billing Plans">
+        <field name="name"/>
+        <field name="quota_invoices"/>
+        <field name="price_omr"/>
+        <field name="overage_rate_bzs"/>
+        <field name="billing_cycle"/>
+        <field name="active"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Billing Plan form -->
+  <record id="view_billing_plan_form" model="ir.ui.view">
+    <field name="name">fawtara.billing.plan.form</field>
+    <field name="model">fawtara.billing.plan</field>
+    <field name="arch" type="xml">
+      <form string="Billing Plan">
+        <sheet>
+          <group>
+            <group string="Plan Details">
+              <field name="name"/>
+              <field name="billing_cycle"/>
+              <field name="active"/>
+            </group>
+            <group string="Pricing">
+              <field name="quota_invoices"/>
+              <field name="price_omr"/>
+              <field name="overage_rate_bzs"/>
+            </group>
+          </group>
+          <group string="Description">
+            <field name="description" nolabel="1"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- Subscription list -->
+  <record id="view_subscription_list" model="ir.ui.view">
+    <field name="name">fawtara.client.subscription.list</field>
+    <field name="model">fawtara.client.subscription</field>
+    <field name="arch" type="xml">
+      <list string="Client Subscriptions"
+            decoration-danger="overage_invoices > 0"
+            decoration-warning="usage_percent >= 80"
+            decoration-success="state == 'active' and usage_percent &lt; 80"
+            decoration-muted="state != 'active'">
+        <field name="client_id"/>
+        <field name="plan_id"/>
+        <field name="quota_invoices"/>
+        <field name="price_omr"/>
+        <field name="start_date"/>
+        <field name="renewal_date"/>
+        <field name="invoices_used"/>
+        <field name="invoices_remaining"/>
+        <field name="usage_percent" widget="progressbar"/>
+        <field name="overage_invoices"/>
+        <field name="overage_amount_omr"/>
+        <field name="state"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- Subscription form -->
+  <record id="view_subscription_form" model="ir.ui.view">
+    <field name="name">fawtara.client.subscription.form</field>
+    <field name="model">fawtara.client.subscription</field>
+    <field name="arch" type="xml">
+      <form string="Client Subscription">
+        <header>
+          <button name="action_cancel"
+                  string="Cancel Subscription"
+                  type="object"
+                  class="btn-danger"
+                  invisible="state != 'active'"/>
+          <button name="action_reactivate"
+                  string="Reactivate"
+                  type="object"
+                  class="btn-primary"
+                  invisible="state == 'active'"/>
+          <field name="state" widget="statusbar"
+                 statusbar_visible="active,expired,cancelled"/>
+        </header>
+        <sheet>
+          <!-- Usage alert -->
+          <div class="alert alert-danger"
+               invisible="overage_invoices == 0">
+            🚨 <strong>Quota Exceeded!</strong>
+            Overage: <field name="overage_invoices" readonly="1"/>
+            invoices =
+            <field name="overage_amount_omr" readonly="1"/> OMR
+          </div>
+          <div class="alert alert-warning"
+               invisible="usage_percent &lt; 80 or overage_invoices > 0">
+            ⚠️ <strong>Approaching Quota</strong> —
+            <field name="usage_percent" readonly="1"/>% used
+          </div>
+
+          <group>
+            <group string="Subscription">
+              <field name="client_id"/>
+              <field name="plan_id"/>
+              <field name="start_date"/>
+              <field name="end_date"/>
+              <field name="renewal_date"/>
+            </group>
+            <group string="Plan Details">
+              <field name="quota_invoices"/>
+              <field name="price_omr"/>
+              <field name="overage_rate_bzs"/>
+            </group>
+          </group>
+
+          <group string="Current Period Usage">
+            <field name="invoices_used"/>
+            <field name="invoices_remaining"/>
+            <field name="usage_percent" widget="progressbar"/>
+            <field name="overage_invoices"/>
+            <field name="overage_amount_omr"/>
+          </group>
+
+          <group string="Notes">
+            <field name="notes" nolabel="1"/>
+          </group>
+        </sheet>
+        <chatter/>
+      </form>
+    </field>
+  </record>
+
+<!--  &lt;!&ndash; Subscription search &ndash;&gt;-->
+<!--  <record id="view_subscription_search" model="ir.ui.view">-->
+<!--    <field name="name">fawtara.client.subscription.search</field>-->
+<!--    <field name="model">fawtara.client.subscription</field>-->
+<!--    <field name="arch" type="xml">-->
+<!--      <search>-->
+<!--        <field name="client_id"/>-->
+<!--        <field name="plan_id"/>-->
+<!--        <filter string="Active"-->
+<!--                name="active"-->
+<!--                domain="[('state','=','active')]"/>-->
+<!--        <filter string="Overage"-->
+<!--                name="overage"-->
+<!--                domain="[('overage_invoices','>',0)]"/>-->
+<!--        <filter string="Near Limit (80%+)"-->
+<!--                name="near_limit"-->
+<!--                domain="[('usage_percent','>=',80)]"/>-->
+<!--        <group expand="0" string="Group By">-->
+<!--          <filter string="Plan"-->
+<!--                  name="group_plan"-->
+<!--                  context="{'group_by': 'plan_id'}"/>-->
+<!--          <filter string="State"-->
+<!--                  name="group_state"-->
+<!--                  context="{'group_by': 'state'}"/>-->
+<!--        </group>-->
+<!--      </search>-->
+<!--    </field>-->
+<!--  </record>-->
+
+  <!-- Actions -->
+  <record id="action_billing_plans" model="ir.actions.act_window">
+    <field name="name">Billing Plans</field>
+    <field name="res_model">fawtara.billing.plan</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <record id="action_subscriptions" model="ir.actions.act_window">
+    <field name="name">Client Subscriptions</field>
+    <field name="res_model">fawtara.client.subscription</field>
+    <field name="view_mode">list,form</field>
+<!--    <field name="search_view_id" ref="view_subscription_search"/>-->
+  </record>
+
+</odoo>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Client Form View -->
+    <record id="view_fawtara_client_form" model="ir.ui.view">
+        <field name="name">fawtara.client.form</field>
+        <field name="model">fawtara.client</field>
+        <field name="arch" type="xml">
+            <form string="Fawtara Client">
+                <header>
+                    <button name="action_register_smp"
+                            string="Register on Peppol SMP"
+                            type="object"
+                            class="btn-primary"
+                            invisible="smp_registered == True"/>
+                    <button name="action_deregister_smp"
+                            string="Deregister from SMP"
+                            type="object"
+                            class="btn-warning"
+                            invisible="smp_registered == False"/>
+                    <button name="action_suspend"
+                            string="Suspend Client"
+                            type="object"
+                            class="btn-danger"
+                            invisible="status == 'SUSPENDED'"/>
+                    <button name="action_rotate_key"
+                            string="Rotate API Key"
+                            type="object"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="PENDING,ACTIVE,SUSPENDED"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o">
+                            <field name="invoice_count" widget="statinfo"
+                                   string="Invoices"/>
+                        </button>
+                        <button name="action_view_subscriptions"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-credit-card">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="plan_name"/>
+                                </span>
+                                <span class="o_stat_text">Plan</span>
+                            </div>
+                        </button>
+                        <button name="action_view_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-circle">
+                            <field name="cleared_count" widget="statinfo"
+                                   string="Cleared"/>
+                        </button>
+                        <button name="action_view_invoices"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-times-circle">
+                            <field name="failed_count" widget="statinfo"
+                                   string="Failed"/>
+                        </button>
+                    </div>
+
+                    <group>
+                        <group string="Company Information">
+                            <field name="name"/>
+                            <field name="name_ar"/>
+                            <field name="cr_number"/>
+                            <field name="vatin"/>
+                        </group>
+                        <group string="Contact">
+                            <field name="contact_name"/>
+                            <field name="contact_email"/>
+                            <field name="contact_phone"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Peppol / Fawtara">
+                            <field name="client_id"/>
+                            <field name="participant_id"/>
+                            <field name="smp_registered"/>
+                            <field name="smp_registered_at"/>
+                        </group>
+                        <group string="API Keys">
+                            <field name="production_api_key" password="True"/>
+                            <field name="sandbox_api_key" password="True"/>
+                        </group>
+                    </group>
+
+                    <group string="Internal Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+
+                    <group string="Audit">
+                        <field name="onboarded_at"/>
+                        <field name="onboarded_by"/>
+                    </group>
+                    <group string="Billing — Current Period">
+                        <field name="plan_name" readonly="1"/>
+                        <field name="quota_invoices" readonly="1"/>
+                        <field name="invoices_used" readonly="1"/>
+                        <field name="usage_percent"
+                               widget="progressbar"
+                               readonly="1"/>
+                        <field name="overage_amount_omr" readonly="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Client List View -->
+    <record id="view_fawtara_client_list" model="ir.ui.view">
+        <field name="name">fawtara.client.list</field>
+        <field name="model">fawtara.client</field>
+        <field name="arch" type="xml">
+            <list string="Fawtara Clients"
+                  decoration-danger="status == 'SUSPENDED'"
+                  decoration-muted="status == 'OFFBOARDED'"
+                  decoration-success="status == 'ACTIVE'">
+                <field name="name"/>
+                <field name="vatin"/>
+                <field name="cr_number"/>
+                <field name="contact_email"/>
+                <field name="status"/>
+                <field name="smp_registered"/>
+                <field name="invoice_count"/>
+                <field name="cleared_count"/>
+                <field name="failed_count"/>
+                <field name="onboarded_at"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- Onboard Wizard View -->
+    <record id="view_onboard_wizard_form" model="ir.ui.view">
+        <field name="name">fawtara.onboard.wizard.form</field>
+        <field name="model">fawtara.onboard.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Onboard New Client">
+                <sheet>
+                    <!-- Input fields — hidden after done -->
+                    <group invisible="state == 'done'">
+                        <group string="Company Information">
+                            <field name="company_name"/>
+                            <field name="company_name_ar"/>
+                            <field name="cr_number"/>
+                            <field name="vatin" placeholder="OM1112345678"/>
+                        </group>
+                        <group string="Primary Contact">
+                            <field name="contact_name"/>
+                            <field name="contact_email"/>
+                            <field name="contact_phone"/>
+                        </group>
+                        <group string="Options">
+                            <field name="register_smp"/>
+                            <field name="send_welcome_email"/>
+                        </group>
+                        <group string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Result shown after creation -->
+                    <group invisible="state != 'done'">
+                        <div class="alert alert-success" role="alert">
+                            <h4>✅ Client Onboarded Successfully</h4>
+                            <p>Save the API keys below — they will not be shown again.</p>
+                        </div>
+                        <group string="API Credentials">
+                            <field name="result_client_id" readonly="1"/>
+                            <field name="result_prod_key" readonly="1"/>
+                            <field name="result_sandbox_key" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <field name="state" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_onboard"
+                            string="Onboard Client"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button name="action_close"
+                            string="Close"
+                            type="object"
+                            class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Onboard Wizard Action -->
+    <record id="action_onboard_wizard" model="ir.actions.act_window">
+        <field name="name">Onboard New Client</field>
+        <field name="res_model">fawtara.onboard.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Client List Action -->
+    <record id="action_fawtara_clients" model="ir.actions.act_window">
+        <field name="name">Clients</field>
+        <field name="res_model">fawtara.client</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

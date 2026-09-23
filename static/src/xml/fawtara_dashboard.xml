@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="fawtara_admin.FawtaraDashboard" owl="1">
+<div class="fwt-dashboard">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap"/>
+
+  <div class="container-fluid">
+
+    <!-- Loading -->
+    <div t-if="state.loading" class="fwt-loading">
+      <div class="fwt-spinner"><i class="fa fa-circle-o-notch fa-spin"/></div>
+      <p>Loading Fawtara Dashboard…</p>
+    </div>
+
+    <div t-if="!state.loading">
+
+      <!-- ── Header ─────────────────────────────────────────────────── -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="fwt-header">
+            <div>
+              <h1 class="fwt-title">Fawtara Dashboard</h1>
+              <p class="fwt-subtitle">
+                Oman OTA E-Invoicing Access Point · POM001182
+              </p>
+            </div>
+            <div class="fwt-header-rings">
+              <div class="fwt-ring">
+                <span class="fwt-ring-val">
+                  <t t-esc="state.clearance_rate"/>%
+                </span>
+                <span class="fwt-ring-lbl">Clearance</span>
+              </div>
+              <div class="fwt-ring" style="border-color:rgba(16,185,129,.55)">
+                <span class="fwt-ring-val" style="color:#bbf7d0">
+                  <t t-esc="state.active_clients"/>
+                </span>
+                <span class="fwt-ring-lbl">Clients</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Date Filter ─────────────────────────────────────────────── -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="fwt-filter-card">
+            <div class="row align-items-end g-2">
+              <div class="col-lg-2 col-md-4">
+                <label class="fwt-label">Date From</label>
+                <input type="date" class="fwt-input"
+                       t-model="state.dateFrom"
+                       t-on-change="(ev) => this.onDateFromChange(ev)"/>
+              </div>
+              <div class="col-lg-2 col-md-4">
+                <label class="fwt-label">Date To</label>
+                <input type="date" class="fwt-input"
+                       t-model="state.dateTo"
+                       t-on-change="(ev) => this.onDateToChange(ev)"/>
+              </div>
+              <div class="col-lg-2 col-md-4">
+                <button class="fwt-btn fwt-btn-primary w-100"
+                        t-on-click="() => this.applyDateFilter()">
+                  <i class="fa fa-filter"/> Apply
+                </button>
+              </div>
+              <div class="col-lg-2 col-md-4">
+                <button class="fwt-btn fwt-btn-ghost w-100"
+                        t-on-click="() => this.clearDateFilter()">
+                  <i class="fa fa-times"/> Clear
+                </button>
+              </div>
+              <div class="col-lg-4 col-md-12">
+                <label class="fwt-label">Quick Filters</label>
+                <div class="fwt-qf-wrap">
+                  <button t-att-class="'fwt-qf '+(state.quickFilters.today?'active':'')"
+                          t-on-click="() => this.setQuickFilter('today')">Today</button>
+                  <button t-att-class="'fwt-qf '+(state.quickFilters.thisWeek?'active':'')"
+                          t-on-click="() => this.setQuickFilter('thisWeek')">Week</button>
+                  <button t-att-class="'fwt-qf '+(state.quickFilters.thisMonth?'active':'')"
+                          t-on-click="() => this.setQuickFilter('thisMonth')">Month</button>
+                  <button t-att-class="'fwt-qf '+(state.quickFilters.lastMonth?'active':'')"
+                          t-on-click="() => this.setQuickFilter('lastMonth')">Last Mo.</button>
+                  <button t-att-class="'fwt-qf '+(state.quickFilters.thisYear?'active':'')"
+                          t-on-click="() => this.setQuickFilter('thisYear')">Year</button>
+                </div>
+              </div>
+            </div>
+            <div t-if="state.dateFrom or state.dateTo"
+                 class="fwt-filter-active mt-3">
+              <i class="fa fa-info-circle"/>
+              <span t-if="state.dateFrom">
+                From <strong t-esc="state.dateFrom"/>
+              </span>
+              <span t-if="state.dateTo">
+                → <strong t-esc="state.dateTo"/>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KPI Row 1 — Clients & Invoices ─────────────────────────── -->
+      <div class="row mb-3 g-3">
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-navy"
+               t-on-click="() => this.openView('fawtara.client','All Clients')">
+            <div class="fwt-kpi-icon"><i class="fa fa-users"/></div>
+            <div class="fwt-kpi-val"><t t-esc="state.total_clients"/></div>
+            <div class="fwt-kpi-lbl">Total Clients</div>
+            <div class="fwt-kpi-sub">
+              <t t-esc="state.active_clients"/> active
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-sky"
+               t-on-click="() => this.openView('fawtara.invoice','Invoices Today')">
+            <div class="fwt-kpi-icon"><i class="fa fa-file-text"/></div>
+            <div class="fwt-kpi-val"><t t-esc="state.invoices_today"/></div>
+            <div class="fwt-kpi-lbl">Invoices Today</div>
+            <div class="fwt-kpi-sub">
+              <t t-esc="state.queued_invoices"/> queued
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-indigo"
+               t-on-click="() => this.openView('fawtara.invoice','This Month')">
+            <div class="fwt-kpi-icon"><i class="fa fa-calendar"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="state.invoices_this_month"/>
+            </div>
+            <div class="fwt-kpi-lbl">Invoices This Month</div>
+            <div class="fwt-kpi-sub">
+              <t t-esc="this.pct(state.cleared_this_month, state.invoices_this_month)"/>% cleared
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-violet">
+            <div class="fwt-kpi-icon"><i class="fa fa-money"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="this.fmt(state.vat_this_month)"/> OMR
+            </div>
+            <div class="fwt-kpi-lbl">VAT Submitted</div>
+            <div class="fwt-kpi-sub">This month to OTA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── KPI Row 2 — Processing ──────────────────────────────────── -->
+      <div class="row mb-4 g-3">
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-emerald"
+               t-on-click="() => this.openView('fawtara.invoice','Cleared',[['status','=','CLEARED']])">
+            <div class="fwt-kpi-icon"><i class="fa fa-check-circle"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="state.cleared_this_month"/>
+            </div>
+            <div class="fwt-kpi-lbl">Cleared This Month</div>
+            <div class="fwt-kpi-sub">Successfully reported to OTA</div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-rose"
+               t-on-click="() => this.openView('fawtara.invoice','Failed',[['status','in',['FAILED','VALIDATION_FAILED','REJECTED']]])">
+            <div class="fwt-kpi-icon"><i class="fa fa-times-circle"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="state.failed_this_month"/>
+            </div>
+            <div class="fwt-kpi-lbl">Failed This Month</div>
+            <div class="fwt-kpi-sub">Needs attention</div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-teal">
+            <div class="fwt-kpi-icon"><i class="fa fa-line-chart"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="state.clearance_rate"/>%
+            </div>
+            <div class="fwt-kpi-lbl">Clearance Rate</div>
+            <div class="fwt-kpi-sub">OTA acceptance rate</div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <div class="fwt-kpi fwt-kpi-amber"
+               t-on-click="() => this.openView('fawtara.client.subscription','Overage Clients',[['overage_invoices','>',0]])">
+            <div class="fwt-kpi-icon"><i class="fa fa-exclamation-triangle"/></div>
+            <div class="fwt-kpi-val">
+              <t t-esc="this.fmt(state.total_overage_omr)"/> OMR
+            </div>
+            <div class="fwt-kpi-lbl">Overage Due</div>
+            <div class="fwt-kpi-sub">Across all clients</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Stat Summary Cards ──────────────────────────────────────── -->
+      <div class="row mb-4 g-3">
+        <div class="col-lg-4">
+          <div class="fwt-stat-card fwt-bl-navy">
+            <h6 class="fwt-stat-title">
+              <i class="fa fa-tachometer"/> Processing Summary
+            </h6>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Invoices Today</span>
+              <span class="fwt-stat-val fwt-val-sky">
+                <t t-esc="state.invoices_today"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">This Month</span>
+              <span class="fwt-stat-val fwt-val-navy">
+                <t t-esc="state.invoices_this_month"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Cleared</span>
+              <span class="fwt-stat-val fwt-val-emerald">
+                <t t-esc="state.cleared_this_month"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Failed</span>
+              <span class="fwt-stat-val fwt-val-rose">
+                <t t-esc="state.failed_this_month"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Queued</span>
+              <span class="fwt-stat-val fwt-val-amber">
+                <t t-esc="state.queued_invoices"/>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="fwt-stat-card fwt-bl-emerald">
+            <h6 class="fwt-stat-title">
+              <i class="fa fa-money"/> Revenue &amp; VAT
+            </h6>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">VAT This Month</span>
+              <span class="fwt-stat-val fwt-val-violet">
+                <t t-esc="this.fmt(state.vat_this_month)"/> OMR
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Overage Due</span>
+              <span class="fwt-stat-val fwt-val-rose">
+                <t t-esc="this.fmt(state.total_overage_omr)"/> OMR
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="fwt-stat-card fwt-bl-sky">
+            <h6 class="fwt-stat-title">
+              <i class="fa fa-users"/> Client Summary
+            </h6>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Total Clients</span>
+              <span class="fwt-stat-val fwt-val-navy">
+                <t t-esc="state.total_clients"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Active</span>
+              <span class="fwt-stat-val fwt-val-emerald">
+                <t t-esc="state.active_clients"/>
+              </span>
+            </div>
+            <div class="fwt-stat-row">
+              <span class="fwt-stat-key">Clearance Rate</span>
+              <span class="fwt-stat-val fwt-val-teal">
+                <t t-esc="state.clearance_rate"/>%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Charts Row 1 ────────────────────────────────────────────── -->
+      <div class="row mb-4 g-3">
+        <div class="col-lg-8">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-navy">
+              <i class="fa fa-line-chart"/> Invoices per Day (Last 30 Days)
+            </div>
+            <div class="fwt-card-body">
+              <div style="height:260px;">
+                <canvas id="fwt-chart-by-day"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-sky">
+              <i class="fa fa-pie-chart"/> By Invoice Type
+            </div>
+            <div class="fwt-card-body">
+              <div style="height:260px;">
+                <canvas id="fwt-chart-by-type"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Charts Row 2 ────────────────────────────────────────────── -->
+      <div class="row mb-4 g-3">
+        <div class="col-lg-6">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-emerald">
+              <i class="fa fa-line-chart"/> Clearance vs Failed Trend
+            </div>
+            <div class="fwt-card-body">
+              <div style="height:260px;">
+                <canvas id="fwt-chart-clearance"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-violet">
+              <i class="fa fa-bar-chart"/> VAT Submitted per Month (OMR)
+            </div>
+            <div class="fwt-card-body">
+              <div style="height:260px;">
+                <canvas id="fwt-chart-vat"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Top Clients Chart ───────────────────────────────────────── -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-navy">
+              <i class="fa fa-bar-chart"/> Top Clients by Invoice Volume
+            </div>
+            <div class="fwt-card-body">
+              <div style="height:280px;">
+                <canvas id="fwt-chart-by-client"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Top Clients Table ───────────────────────────────────────── -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-dark">
+              <i class="fa fa-table"/> Client Usage — This Month
+            </div>
+            <div class="fwt-card-body" style="padding:0 22px 20px;">
+              <div style="overflow-x:auto;">
+                <table class="fwt-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Client</th>
+                      <th>VATIN</th>
+                      <th>Plan</th>
+                      <th>Quota</th>
+                      <th>Used</th>
+                      <th>Cleared</th>
+                      <th>Failed</th>
+                      <th style="min-width:130px;">Usage</th>
+                      <th>Overage (OMR)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <t t-foreach="state.top_clients_table"
+                       t-as="row" t-key="row.client_id">
+                      <tr>
+                        <td style="color:#94a3b8;font-weight:700;">
+                          <t t-esc="row_index + 1"/>
+                        </td>
+                        <td class="fwt-tbl-name">
+                          <t t-esc="row.name"/>
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#64748b;">
+                          <t t-esc="row.vatin"/>
+                        </td>
+                        <td>
+                          <span class="fwt-badge fwt-badge-plan">
+                            <t t-esc="row.plan"/>
+                          </span>
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#1d4ed8;">
+                          <t t-esc="row.quota"/>
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#374151;">
+                          <t t-esc="row.used"/>
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#10b981;">
+                          <t t-esc="row.cleared"/>
+                        </td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#ef4444;">
+                          <t t-esc="row.failed"/>
+                        </td>
+                        <td>
+                          <div class="fwt-rate-bar">
+                            <div class="fwt-rate-track">
+                              <div class="fwt-rate-fill"
+                                   t-att-style="'width:'+Math.min(row.usage_pct,100)+'%;background:'+(row.usage_pct>=100?'#ef4444':row.usage_pct>=80?'#f59e0b':'#1d4ed8')"/>
+                            </div>
+                            <span class="fwt-rate-lbl">
+                              <t t-esc="row.usage_pct"/>%
+                            </span>
+                          </div>
+                        </td>
+                        <td t-att-style="'font-family:JetBrains Mono,monospace;font-weight:700;color:'+(row.overage_omr>0?'#ef4444':'#10b981')">
+                          <t t-esc="row.overage_omr"/>
+                        </td>
+                      </tr>
+                    </t>
+                    <t t-if="state.top_clients_table.length === 0">
+                      <tr>
+                        <td colspan="10" class="fwt-empty">
+                          No client data found
+                        </td>
+                      </tr>
+                    </t>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Failed Invoices ─────────────────────────────────────────── -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="fwt-card">
+            <div class="fwt-card-hdr fwt-hdr-rose">
+              <i class="fa fa-exclamation-circle"/>
+              Failed Invoices — Needs Attention
+            </div>
+            <div class="fwt-card-body" style="padding:0 22px 20px;">
+              <table class="fwt-table">
+                <thead>
+                  <tr>
+                    <th>Invoice Number</th>
+                    <th>Client</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="state.failed_invoices_list"
+                     t-as="inv" t-key="inv.uuid">
+                    <tr>
+                      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;">
+                        <t t-esc="inv.number"/>
+                      </td>
+                      <td class="fwt-tbl-name">
+                        <t t-esc="inv.client"/>
+                      </td>
+                      <td>
+                        <span class="fwt-badge fwt-badge-type">
+                          <t t-esc="inv.type"/>
+                        </span>
+                      </td>
+                      <td style="color:#64748b;">
+                        <t t-esc="inv.date"/>
+                      </td>
+                      <td>
+                        <span style="color:#ef4444;font-weight:700;">
+                          <t t-esc="inv.status"/>
+                        </span>
+                      </td>
+                      <td style="color:#64748b;font-size:0.8rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        <t t-esc="inv.error"/>
+                      </td>
+                    </tr>
+                  </t>
+                  <t t-if="state.failed_invoices_list.length === 0">
+                    <tr>
+                      <td colspan="6" class="fwt-empty" style="color:#10b981;">
+                        ✅ No failed invoices — all clear!
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /t-if not loading -->
+  </div><!-- /container-fluid -->
+</div><!-- /fwt-dashboard -->
+</t>
+</templates>

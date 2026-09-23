@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_fawtara_dashboard_form" model="ir.ui.view">
+        <field name="name">fawtara.dashboard.form</field>
+        <field name="model">fawtara.dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Fawtara Dashboard" create="false" edit="false">
+                <sheet>
+
+                    <!-- KPI Cards Row 1 -->
+                    <div class="o_horizontal_separator">Clients</div>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-primary text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="total_clients" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Total Clients</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-success text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="active_clients" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Active Clients</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-info text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="invoices_today" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Invoices Today</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-warning text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="invoices_this_month" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Invoices This Month</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards Row 2 -->
+                    <div class="o_horizontal_separator">Processing</div>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-success text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="cleared_this_month" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Cleared This Month</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-danger text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="failed_this_month" readonly="1"/>
+                                    </h2>
+                                    <p class="mb-0">Failed This Month</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-primary text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="clearance_rate" readonly="1"/>%
+                                    </h2>
+                                    <p class="mb-0">Clearance Rate</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card bg-dark text-white mb-3">
+                                <div class="card-body text-center">
+                                    <h2>
+                                        <field name="vat_this_month" readonly="1"/>
+                                        OMR
+                                    </h2>
+                                    <p class="mb-0">VAT Submitted</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Billing Summary -->
+                    <div class="o_horizontal_separator">Billing</div>
+                    <div class="row">
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card border-danger mb-3">
+                                <div class="card-body text-center">
+                                    <h2 class="text-danger">
+                                        <field name="total_overage_omr" readonly="1"/>
+                                        OMR
+                                    </h2>
+                                    <p class="mb-0">Total Overage Due This Month</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="o_horizontal_separator">Quick Actions</div>
+                    <div class="row mt-2">
+                        <div class="col-md-3">
+                            <a type="action"
+                               name="%(fawtara_admin.action_fawtara_clients)d"
+                               class="btn btn-outline-primary w-100 mb-2">
+                                👥 Manage Clients
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a type="action"
+                               name="%(fawtara_admin.action_subscriptions)d"
+                               class="btn btn-outline-warning w-100 mb-2">
+                                📋 Subscriptions
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a type="action"
+                               name="%(fawtara_admin.action_fawtara_invoices)d"
+                               class="btn btn-outline-info w-100 mb-2">
+                                🧾 All Invoices
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a type="action"
+                               name="%(fawtara_admin.action_billing_plans)d"
+                               class="btn btn-outline-secondary w-100 mb-2">
+                                💰 Billing Plans
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Client Usage Table -->
+                    <div class="o_horizontal_separator">
+                        Client Usage — This Month
+                    </div>
+                    <field name="name" invisible="1"/>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_fawtara_dashboard" model="ir.actions.act_window">
+        <field name="name">Dashboard</field>
+        <field name="res_model">fawtara.dashboard</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Server action to open/create dashboard record -->
+    <record id="action_open_dashboard" model="ir.actions.server">
+  <field name="name">Open Fawtara Dashboard</field>
+  <field name="model_id" ref="model_fawtara_dashboard"/>
+  <field name="state">code</field>
+  <field name="code">record = env['fawtara.dashboard'].search([], limit=1)
+if not record:
+    record = env['fawtara.dashboard'].create({'name': 'Dashboard'})
+action = {'type': 'ir.actions.act_window', 'res_model': 'fawtara.dashboard', 'res_id': record.id, 'view_mode': 'form', 'target': 'current'}
+  </field>
+</record>
+
+</odoo>
